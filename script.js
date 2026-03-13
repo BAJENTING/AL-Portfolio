@@ -72,6 +72,25 @@ function handleSubmit(e) {
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
 
+// Mobile Nav Toggle
+const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+const navLinks = document.querySelector('.nav-links');
+
+if (mobileNavToggle) {
+  mobileNavToggle.addEventListener('click', () => {
+    mobileNavToggle.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+}
+
+// Close mobile nav on link click
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
+    mobileNavToggle.classList.remove('active');
+    navLinks.classList.remove('active');
+  });
+});
+
 // Check for saved theme
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
