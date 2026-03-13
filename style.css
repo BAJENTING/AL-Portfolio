@@ -59,11 +59,16 @@ body.light-mode .moon-icon { display: block; }
 
 html { scroll-behavior: smooth; }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
 body {
   font-family: 'Oswald', sans-serif;
   background: var(--black);
   color: var(--white);
-  overflow-x: hidden;
   cursor: none;
   transition: background-color 0.4s ease, color 0.4s ease;
 }
@@ -1166,22 +1171,25 @@ footer {
   
   .nav-links {
     position: fixed;
-    top: 0; right: 0; bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     width: 100%;
-    background: var(--black);
+    height: 100vh;
+    background: var(--black); /* Fully opaque */
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     padding: 2rem;
     transform: translateX(100%);
     transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
     z-index: 240;
     margin: 0;
     list-style: none;
+    gap: 2.5rem;
   }
   
   .nav-links.active { transform: translateX(0); }
-  .nav-links a { font-size: 1.5rem; }
-  .nav-links li { margin: 1rem 0; }
+  .nav-links a { font-size: 1.2rem; display: block; width: 100%; text-align: center; }
+  .nav-links li { width: 100%; margin: 0; }
   
   h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
   .hero-numbers { flex-direction: column; gap: 2rem; align-items: center; }
