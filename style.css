@@ -457,7 +457,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   font-size: 0.55rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.22em; 
   text-transform: uppercase;
   color: var(--red);
   margin-bottom: 0.5rem;
