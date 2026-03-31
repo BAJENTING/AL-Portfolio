@@ -10,7 +10,6 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isLightMode, setIsLightMode] = useState(false);
   const [user, setUser] = useState<unknown>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -18,22 +17,10 @@ const Navbar = () => {
   const pathname = usePathname();
   const supabase = createClient();
 
-  const toggleDropdown = (e: React.MouseEvent, name: string) => {
-    // We don't preventDefault or stopPropagation to allow outside click listener to work
-    // and naturally handle link clicks if they happen.
-    if (activeDropdown === name) {
-      setActiveDropdown(null);
-    } else {
-      setActiveDropdown(name);
-    }
-  };
-
   const closeAll = () => {
     setIsMobileMenuOpen(false);
-    setActiveDropdown(null);
   };
 
-  // Close all menus when pathname changes (navigation)
   useEffect(() => {
     closeAll();
   }, [pathname]);
@@ -43,15 +30,6 @@ const Navbar = () => {
       setScrolled(window.scrollY > 60);
     };
 
-    // Close dropdowns on outside click
-    const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-        if (!target.closest('.dropdown')) {
-            setActiveDropdown(null);
-        }
-    };
-
-    // Check auth status
     const getInitialAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
@@ -82,7 +60,6 @@ const Navbar = () => {
     });
 
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('click', handleClickOutside);
 
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light-mode') {
@@ -93,7 +70,6 @@ const Navbar = () => {
 
     return () => {
         window.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('click', handleClickOutside);
         subscription.unsubscribe();
     };
   }, [supabase.auth]);
@@ -112,13 +88,24 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-    if (activeDropdown) setActiveDropdown(null);
   };
 
   const handleLogout = async () => {
     await logout();
     closeAll();
   };
+
+  const navLinks = [
+    { name: 'Home', href: '/#hero' },
+    { name: 'About', href: '/#about' },
+    { name: 'Coaching', href: '/#coaching' },
+    { name: 'Companies', href: '/#companies' },
+    { name: 'Developers', href: '/#developers' },
+    { name: 'Education', href: '/#education' },
+    { name: 'News', href: '/#news' },
+    { name: 'Awards', href: '/#awards' },
+    { name: 'Contact', href: '/#contact' },
+  ];
 
   if (!mounted) {
     return (
@@ -135,71 +122,21 @@ const Navbar = () => {
 
   return (
     <nav id="navbar" className={scrolled ? 'scrolled' : ''}>
-      <Link href="/" className="nav-logo" onClick={closeAll}>Anthony <span>Leuterio</span><sup>Realty</sup></Link>
+      <Link href="/#hero" className="nav-logo" onClick={closeAll}>Anthony <span>Leuterio</span><sup>Realty</sup></Link>
       <div className="nav-right">
-        <ul className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`} onClick={(e) => {
-            if (e.target === e.currentTarget) closeAll();
-        }}>
-          <li><Link href="/" onClick={closeAll}>Home</Link></li>
+        <ul className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
+          {navLinks.map((link) => (
+            <li key={link.name}>
+              <Link href={link.href} onClick={closeAll}>{link.name}</Link>
+            </li>
+          ))}
           
-          <li className={`dropdown ${activeDropdown === 'coaching' ? 'active' : ''}`}>
-            <span className="dropbtn" onClick={(e) => toggleDropdown(e, 'coaching')}>Coaching <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
-            <ul className="dropdown-content">
-              <li><Link href="/about" onClick={closeAll}>About</Link></li>
-              <li><Link href="/#companies" onClick={closeAll}>Companies</Link></li>
-              <li><Link href="/executive-coaching" onClick={closeAll}>Executive Coaching</Link></li>
-              <li><Link href="/team-leadership" onClick={closeAll}>Team Leadership</Link></li>
-              <li><Link href="/sales-mastery" onClick={closeAll}>Sales Mastery</Link></li>
-            </ul>
-          </li>
-
-          <li className={`dropdown ${activeDropdown === 'training' ? 'active' : ''}`}>
-            <span className="dropbtn" onClick={(e) => toggleDropdown(e, 'training')}>Training <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
-            <ul className="dropdown-content">
-              <li><Link href="/real-estate-basics" onClick={closeAll}>Real Estate Basics</Link></li>
-              <li><Link href="/digital-marketing" onClick={closeAll}>Digital Marketing</Link></li>
-              <li><Link href="/legal-compliance" onClick={closeAll}>Legal Compliance</Link></li>
-            </ul>
-          </li>
-
-          <li className={`dropdown ${activeDropdown === 'events' ? 'active' : ''}`}>
-            <span className="dropbtn" onClick={(e) => toggleDropdown(e, 'events')}>Events <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
-            <ul className="dropdown-content">
-              <li><Link href="/upcoming-summits" onClick={closeAll}>Upcoming Summits</Link></li>
-              <li><Link href="/workshops" onClick={closeAll}>Workshops</Link></li>
-              <li><Link href="/webinars" onClick={closeAll}>Webinars</Link></li>
-            </ul>
-          </li>
-
-          <li className={`dropdown ${activeDropdown === 'resources' ? 'active' : ''}`}>
-            <span className="dropbtn" onClick={(e) => toggleDropdown(e, 'resources')}>Resources <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
-            <ul className="dropdown-content">
-              <li><Link href="/market-reports" onClick={closeAll}>Market Reports</Link></li>
-              <li><Link href="/templates" onClick={closeAll}>Templates</Link></li>
-              <li><Link href="/e-books" onClick={closeAll}>E-books</Link></li>
-            </ul>
-          </li>
-          
-          {/* Auth Links */}
           {user ? (
-            <li className={`dropdown ${activeDropdown === 'account' ? 'active' : ''}`}>
-              <span className="dropbtn" style={{ color: 'var(--red)' }} onClick={(e) => toggleDropdown(e, 'account')}>Account <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
-              <ul className="dropdown-content">
-                <li><Link href="/admin" onClick={closeAll}>Admin Dashboard</Link></li>
-                <li><button onClick={handleLogout} style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'inherit', 
-                    width: '100%', 
-                    textAlign: 'left', 
-                    padding: 'inherit',
-                    font: 'inherit',
-                    cursor: 'pointer'
-                }}>Logout</button></li>
-              </ul>
+            <li className="admin-link-nav">
+              <Link href="/admin" onClick={closeAll} style={{ color: 'var(--red)' }}>Admin</Link>
             </li>
           ) : (
-            <li><Link href="/login" onClick={closeAll}>Admin Login</Link></li>
+            <li><Link href="/login" onClick={closeAll}>Login</Link></li>
           )}
         </ul>
         <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">

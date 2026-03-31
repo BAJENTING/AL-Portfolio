@@ -1,372 +1,596 @@
-import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { logout } from '@/app/auth/actions';
+import { useRouter } from 'next/navigation';
 import { 
   Building2, 
   Trophy, 
-  ScrollText, 
-  Lightbulb, 
-  Code2, 
-  Mail,
-  PlusCircle,
-  ExternalLink,
-  ArrowRight
-} from 'lucide-react'
+  GraduationCap, 
+  Target, 
+  Users,
+  Plus,
+  Trash2,
+  Edit2,
+  LogOut,
+  ChevronRight
+} from 'lucide-react';
 
-export default async function AdminPage() {
-  const supabase = await createClient()
-  
-  const [
-    { count: companiesCount },
-    { count: awardsCount },
-    { count: credentialsCount },
-    { count: coachingCount },
-    { count: developersCount },
-    { count: contactsCount }
-  ] = await Promise.all([
-    supabase.from('companies').select('*', { count: 'exact', head: true }),
-    supabase.from('awards').select('*', { count: 'exact', head: true }),
-    supabase.from('credentials').select('*', { count: 'exact', head: true }),
-    supabase.from('coaching').select('*', { count: 'exact', head: true }),
-    supabase.from('developers').select('*', { count: 'exact', head: true }),
-    supabase.from('contacts').select('*', { count: 'exact', head: true })
-  ])
+const SECTIONS = [
+  { id: 'coaching', label: 'Coaching Grid', icon: <Target size={24} />, table: 'coaching' },
+  { id: 'my-companies', label: 'My Companies', icon: <Building2 size={24} />, table: 'companies' },
+  { id: 'partner-companies', label: 'Partner Companies', icon: <Users size={24} />, table: 'developers' },
+  { id: 'education', label: 'Education', icon: <GraduationCap size={24} />, table: 'credentials' },
+  { id: 'awards', label: 'Awards', icon: <Trophy size={24} />, table: 'awards' },
+];
 
-  const stats = [
-    { label: 'Companies', val: companiesCount ?? 0, href: '/admin/companies', icon: <Building2 size={24} />, color: '#3498db' },
-    { label: 'Awards', val: awardsCount ?? 0, href: '/admin/awards', icon: <Trophy size={24} />, color: '#f1c40f' },
-    { label: 'Credentials', val: credentialsCount ?? 0, href: '/admin/credentials', icon: <ScrollText size={24} />, color: '#e67e22' },
-    { label: 'Coaching', val: coachingCount ?? 0, href: '/admin/coaching', icon: <Lightbulb size={24} />, color: '#9b59b6' },
-    { label: 'Developers', val: developersCount ?? 0, href: '/admin/developers', icon: <Code2 size={24} />, color: '#2ecc71' },
-    { label: 'Messages', val: contactsCount ?? 0, href: '/admin/contacts', icon: <Mail size={24} />, color: '#e74c3c' },
-  ]
+const TABLE_SCHEMAS: Record<string, string[]> = {
+  coaching: ['title', 'badge_text', 'image_url', 'description'],
+  companies: ['name', 'logo_url', 'website_url', 'description'],
+  developers: ['name', 'logo_url', 'website_url', 'sort_order'],
+  credentials: ['title', 'institution', 'organization', 'category'],
+  awards: ['title', 'organization', 'year', 'icon'],
+};
+
+export default function AdminPage() {
+  const [activeSection, setActiveSection] = useState(SECTIONS[0]);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentItem, setCurrentItem] = useState<any>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const fetchData = async () => {
+    setLoading(true);
+    const { data: records, error } = await supabase
+      .from(activeSection.table)
+      .select('*');
+    
+    if (error) {
+      console.error(`Error fetching ${activeSection.table}:`, error);
+      alert(`Error: ${error.message}`);
+    } else {
+      setData(records || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [activeSection]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
+  const handleDelete = async (id: any) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    const { error } = await supabase.from(activeSection.table).delete().eq('id', id);
+    if (!error) fetchData();
+    else alert(error.message);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const updates: any = {};
+    formData.forEach((value, key) => {
+      if (key === 'sort_order' || key === 'year') {
+        updates[key] = parseInt(value as string) || 0;
+      } else {
+        updates[key] = value;
+      }
+    });
+
+    let res;
+    if (currentItem?.id) {
+      res = await supabase.from(activeSection.table).update(updates).eq('id', currentItem.id);
+    } else {
+      res = await supabase.from(activeSection.table).insert([updates]);
+    }
+
+    if (res.error) alert(res.error.message);
+    else {
+      setIsEditing(false);
+      setCurrentItem(null);
+      fetchData();
+    }
+  };
+
+  const renderCell = (item: any, field: string) => {
+    const value = item[field];
+    if (!value) return '-';
+
+    // Handle Website URLs as text links
+    if (field === 'website_url') {
+      return (
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-url">
+          {value.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+        </a>
+      );
+    }
+
+    const isImagePath = typeof value === 'string' && (
+      field === 'image_url' || 
+      field === 'logo_url' ||
+      field === 'icon' || 
+      value.match(/\.(jpeg|jpg|gif|png|webp|svg|jfif)$/i)
+    );
+
+    if (isImagePath) {
+      const src = (value.startsWith('http') || value.startsWith('/')) 
+        ? value 
+        : `/images/${value}`;
+        
+      return (
+        <a href={src} target="_blank" rel="noopener noreferrer" className="table-img-link">
+          <img src={src} alt="" className="table-img" onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=Broken';
+          }} />
+        </a>
+      );
+    }
+
+    return <span className="truncate">{value.toString() || '-'}</span>;
+  };
 
   return (
-    <div className="dashboard-wrapper">
-      {/* HEADER SECTION */}
-      <div className="dashboard-header">
-        <div className="welcome-text">
-          <h1>System <span>Overview</span></h1>
-          <p>Welcome back, Administrator. Here&apos;s what&apos;s happening with your portfolio today.</p>
+    <div className="admin-container">
+      {/* HEADER */}
+      <header className="admin-header">
+        <div className="header-left">
+          <span className="breadcrumb">Control Panel</span>
+          <ChevronRight size={16} className="separator" />
+          <span className="current">Dashboard</span>
         </div>
-        <Link href="/" target="_blank" className="live-site-btn">
-          <span>View Live Site</span>
-          <ExternalLink size={16} />
-        </Link>
-      </div>
+        <div className="header-right">
+          <span className="user-email">admin@leuterio.com</span>
+          <button onClick={handleLogout} className="disconnect-btn">
+            Disconnect <LogOut size={16} />
+          </button>
+        </div>
+      </header>
 
-      {/* STATS GRID */}
-      <div className="stats-grid">
-        {stats.map((stat, i) => (
-          <Link key={i} href={stat.href} className="stat-card">
-            <div className="stat-icon" style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
-              {stat.icon}
-            </div>
-            <div className="stat-content">
-              <span className="stat-label">{stat.label}</span>
-              <div className="stat-value-row">
-                <span className="stat-value">{stat.val}</span>
-                <div className="stat-trend">
-                  <ArrowRight size={14} />
-                </div>
-              </div>
-            </div>
-            <div className="card-progress">
-              <div className="progress-bar" style={{ width: '100%', backgroundColor: stat.color }}></div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <div className="admin-content">
+        {/* NAVIGATION CARDS */}
+        <div className="nav-grid">
+          {SECTIONS.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => {
+                setActiveSection(section);
+                setIsEditing(false);
+                setCurrentItem(null);
+              }}
+              className={`nav-card ${activeSection.id === section.id ? 'active' : ''}`}
+            >
+              <div className="card-icon">{section.icon}</div>
+              <span className="card-label">{section.label}</span>
+            </button>
+          ))}
+        </div>
 
-      {/* QUICK ACTIONS & RECENT ACTIVITY MOCKUP */}
-      <div className="dashboard-lower-grid">
-        <div className="actions-panel">
-          <h3>Quick <span>Actions</span></h3>
-          <div className="action-buttons">
-            <Link href="/admin/awards" className="action-link">
-              <PlusCircle size={18} />
-              <span>Add New Award</span>
-            </Link>
-            <Link href="/admin/credentials" className="action-link">
-              <PlusCircle size={18} />
-              <span>Update Credentials</span>
-            </Link>
-            <Link href="/admin/contacts" className="action-link">
-              <Mail size={18} />
-              <span>Check Messages</span>
-            </Link>
+        {/* ACTIVE SECTION AREA */}
+        <div className="section-area">
+          <div className="section-header">
+            <h2>{activeSection.label} <span>Management</span></h2>
+            {!isEditing && (
+              <button onClick={() => { setIsEditing(true); setCurrentItem({}); }} className="add-btn">
+                <Plus size={18} /> Add New
+              </button>
+            )}
           </div>
-        </div>
 
-        <div className="status-panel">
-          <h3>System <span>Status</span></h3>
-          <div className="status-list">
-            <div className="status-item">
-              <div className="status-dot online"></div>
-              <div className="status-info">
-                <span className="status-title">Database Connection</span>
-                <span className="status-desc">Supabase Cluster - Operational</span>
-              </div>
+          {/* FORM AREA */}
+          {isEditing && (
+            <div className="form-container">
+              <h3>{currentItem?.id ? 'Edit' : 'Create New'} {activeSection.label}</h3>
+              <form onSubmit={handleSubmit} className="admin-form">
+                <div className="form-grid">
+                  {TABLE_SCHEMAS[activeSection.table].map((field) => (
+                    <div key={field} className="form-group">
+                      <label>{field.replace('_', ' ')}</label>
+                      {field === 'description' ? (
+                        <textarea
+                          name={field}
+                          defaultValue={currentItem?.[field] || ''}
+                          rows={3}
+                          required
+                        />
+                      ) : (
+                        <input
+                          type={field === 'sort_order' || field === 'year' ? 'number' : 'text'}
+                          name={field}
+                          defaultValue={currentItem?.[field] || ''}
+                          required
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="form-actions">
+                  <button type="submit" className="save-btn">Save Entry</button>
+                  <button type="button" onClick={() => { setIsEditing(false); setCurrentItem(null); }} className="cancel-btn">Cancel</button>
+                </div>
+              </form>
             </div>
-            <div className="status-item">
-              <div className="status-dot online"></div>
-              <div className="status-info">
-                <span className="status-title">Asset Storage</span>
-                <span className="status-desc">Cdn Nodes - Active</span>
+          )}
+
+          {/* LIST AREA */}
+          <div className="list-container">
+            {loading ? (
+              <div className="loading">Loading items...</div>
+            ) : data.length === 0 ? (
+              <div className="empty">No items found. Click &quot;Add New&quot; to get started.</div>
+            ) : (
+              <div className="data-table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      {TABLE_SCHEMAS[activeSection.table].map(field => (
+                        <th key={field}>{field.replace('_', ' ')}</th>
+                      ))}
+                      <th className="actions-cell">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((item) => (
+                      <tr key={item.id}>
+                        {TABLE_SCHEMAS[activeSection.table].map(field => (
+                          <td key={field}>
+                            {renderCell(item, field)}
+                          </td>
+                        ))}
+                        <td className="actions-cell">
+                          <button onClick={() => { setCurrentItem(item); setIsEditing(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="edit-btn"><Edit2 size={16} /></button>
+                          <button onClick={() => handleDelete(item.id)} className="delete-btn"><Trash2 size={16} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
       <style>{`
-        .dashboard-wrapper {
+        .admin-container {
+          padding: 0;
+          color: white;
+          font-family: 'DM Sans', sans-serif;
+        }
+
+        .admin-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 40px;
+          background: #1A1A1A;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .breadcrumb { color: var(--text-dim); font-size: 0.9rem; }
+        .separator { color: rgba(255, 255, 255, 0.2); }
+        .current { color: var(--red); font-size: 0.9rem; font-weight: 700; }
+
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 30px;
+        }
+
+        .user-email {
+          color: var(--text-mid);
+          font-size: 0.9rem;
+        }
+
+        .disconnect-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: none;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          transition: all 0.3s;
+        }
+
+        .disconnect-btn:hover {
+          background: var(--red);
+          border-color: var(--red);
+        }
+
+        .admin-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 40px;
           display: flex;
           flex-direction: column;
           gap: 40px;
         }
 
-        .dashboard-header {
+        .nav-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+        }
+
+        .nav-card {
+          background: #1A1A1A;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 30px 20px;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          color: white;
+        }
+
+        .nav-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(210, 31, 23, 0.3);
+          background: #222;
+        }
+
+        .nav-card.active {
+          border-color: var(--red);
+          background: rgba(210, 31, 23, 0.05);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+          color: var(--text-dim);
+          transition: color 0.3s;
+        }
+
+        .nav-card.active .card-icon {
+          color: var(--red);
+        }
+
+        .card-label {
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          font-size: 0.9rem;
+        }
+
+        .section-area {
+          background: #1A1A1A;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 40px;
+        }
+
+        .section-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-end;
-          padding-bottom: 20px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          align-items: center;
+          margin-bottom: 40px;
         }
 
-        .welcome-text h1 {
-          font-size: 2.2rem;
-          margin-bottom: 10px;
-          letter-spacing: -0.02em;
+        .section-header h2 {
+          font-family: 'Oswald', sans-serif;
+          font-size: 1.8rem;
+          text-transform: uppercase;
         }
 
-        .welcome-text h1 span { color: var(--red); }
-        .welcome-text p { color: var(--text-dim); font-size: 0.95rem; }
+        .section-header h2 span { color: var(--red); }
 
-        .live-site-btn {
+        .add-btn {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 20px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
+          gap: 8px;
+          background: var(--red);
           color: white;
-          text-decoration: none;
-          font-size: 0.85rem;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
           font-weight: 600;
+          cursor: pointer;
           transition: all 0.3s;
         }
 
-        .live-site-btn:hover {
-          background: var(--red);
-          border-color: var(--red);
-          transform: translateY(-2px);
-        }
+        .add-btn:hover { background: var(--red-light); transform: translateY(-2px); }
 
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 24px;
-        }
-
-        .stat-card {
-          background: #1A1A1A;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 24px;
-          border-radius: 16px;
-          text-decoration: none;
-          color: white;
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .stat-card:hover {
-          transform: translateY(-8px);
-          background: #222;
-          border-color: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        .stat-icon {
-          width: 48px;
-          height: 48px;
+        .form-container {
+          background: #0F0F0F;
+          padding: 30px;
           border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          margin-bottom: 40px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .stat-content {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+        .form-container h3 {
+          margin-bottom: 25px;
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
+          font-size: 1.2rem;
+          color: var(--red);
         }
 
-        .stat-label {
-          font-size: 0.8rem;
+        .admin-form { display: flex; flex-direction: column; gap: 20px; }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+        .form-group label {
+          font-size: 0.75rem;
           text-transform: uppercase;
           letter-spacing: 0.1em;
           color: var(--text-dim);
-          font-weight: 600;
         }
 
-        .stat-value-row {
+        .form-group input, .form-group textarea {
+          background: #1A1A1A;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 12px;
+          border-radius: 6px;
+          color: white;
+          font-family: inherit;
+          outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+          border-color: var(--red);
+        }
+
+        .form-actions {
           display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
+          gap: 15px;
+          margin-top: 10px;
         }
 
-        .stat-value {
-          font-size: 2.5rem;
-          font-weight: 700;
-          line-height: 1;
-        }
-
-        .stat-trend {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.03);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-dim);
-          transition: all 0.3s;
-        }
-
-        .stat-card:hover .stat-trend {
+        .save-btn {
           background: var(--red);
           color: white;
-          transform: rotate(-45deg);
-        }
-
-        .card-progress {
-          height: 4px;
-          width: 100%;
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 2px;
-          overflow: hidden;
-          margin-top: 5px;
-        }
-
-        .progress-bar {
-          height: 100%;
-          opacity: 0.5;
-          transition: opacity 0.3s;
-        }
-
-        .stat-card:hover .progress-bar {
-          opacity: 1;
-        }
-
-        .dashboard-lower-grid {
-          display: grid;
-          grid-template-columns: 1fr 350px;
-          gap: 24px;
-        }
-
-        .actions-panel, .status-panel {
-          background: #1A1A1A;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 30px;
-          border-radius: 16px;
-        }
-
-        h3 {
-          font-size: 1.25rem;
-          margin-bottom: 25px;
-          letter-spacing: -0.01em;
-        }
-
-        h3 span { color: var(--red); }
-
-        .action-buttons {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 15px;
-        }
-
-        .action-link {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 15px 20px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          color: var(--text-mid);
-          text-decoration: none;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 6px;
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
           font-weight: 600;
+          cursor: pointer;
+        }
+
+        .cancel-btn {
+          background: transparent;
+          color: var(--text-dim);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 12px 30px;
+          border-radius: 6px;
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .data-table-wrapper {
+          overflow-x: auto;
+          margin-top: 20px;
+        }
+
+        .data-table {
+          width: 100%;
+          border-collapse: collapse;
+          text-align: left;
+        }
+
+        .data-table th {
+          padding: 15px;
+          background: rgba(255, 255, 255, 0.02);
+          font-family: 'Oswald', sans-serif;
+          text-transform: uppercase;
+          font-size: 0.8rem;
+          letter-spacing: 0.05em;
+          color: var(--text-dim);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table td {
+          padding: 15px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.03);
           font-size: 0.9rem;
+          color: var(--text-mid);
+        }
+
+        .table-img {
+          height: 50px;
+          width: 80px;
+          object-fit: contain;
+          border-radius: 4px;
+          display: block;
+        }
+
+        .table-img-link {
+          display: inline-block;
+          background: transparent;
+        }
+
+        .text-url {
+          color: #3498db;
+          text-decoration: none;
+          font-size: 0.85rem;
+          transition: color 0.3s;
+        }
+
+        .text-url:hover {
+          color: #5dade2;
+          text-decoration: underline;
+        }
+
+        .truncate {
+          display: block;
+          max-width: 200px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .actions-cell {
+          text-align: right;
+          width: 100px;
+        }
+
+        .edit-btn, .delete-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
           transition: all 0.3s;
         }
 
-        .action-link:hover {
-          background: rgba(210, 31, 23, 0.1);
-          color: var(--red);
-          border-color: rgba(210, 31, 23, 0.2);
-          transform: translateX(5px);
-        }
+        .edit-btn { color: #3498db; }
+        .edit-btn:hover { color: #5dade2; transform: scale(1.1); }
 
-        .status-list {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
+        .delete-btn { color: var(--red); }
+        .delete-btn:hover { color: var(--red-light); transform: scale(1.1); }
 
-        .status-item {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
-
-        .status-dot.online {
-          background: #2ecc71;
-          box-shadow: 0 0 10px #2ecc71;
-        }
-
-        .status-info {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .status-title {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: white;
-        }
-
-        .status-desc {
-          font-size: 0.75rem;
+        .loading, .empty {
+          padding: 60px;
+          text-align: center;
           color: var(--text-dim);
-        }
-
-        @media (max-width: 1200px) {
-          .dashboard-lower-grid {
-            grid-template-columns: 1fr;
-          }
+          font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
-          .dashboard-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 20px;
-          }
-          .welcome-text h1 { font-size: 1.8rem; }
-          .action-buttons { grid-template-columns: 1fr; }
+          .admin-header { padding: 15px 20px; }
+          .admin-content { padding: 20px; }
+          .nav-grid { grid-template-columns: 1fr 1fr; }
+          .form-grid { grid-template-columns: 1fr; }
+          .header-right .user-email { display: none; }
         }
       `}</style>
     </div>
-  )
+  );
 }
