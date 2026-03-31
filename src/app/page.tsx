@@ -56,6 +56,8 @@ export default function Home() {
   
   const [currentCompanyIndex, setCurrentCompanyIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(true);
+  const [currentEduIndex, setCurrentEduIndex] = useState(1);
+  const [isEduTransitioning, setIsEduTransitioning] = useState(true);
 
   const clonedCompanies = companies.length > 0 ? [companies[companies.length - 1], ...companies, companies[0]] : [];
   const clonedCredentials = credentials.length > 0 ? [credentials[credentials.length - 1], ...credentials, credentials[0]] : [];
@@ -101,21 +103,18 @@ export default function Home() {
   };
 
   const nextCompany = () => {
-    if (!isTransitioning && (currentCompanyIndex === 0 || currentCompanyIndex === clonedCompanies.length - 1)) return;
+    if (clonedCompanies.length <= 1) return;
     setIsTransitioning(true);
     setCurrentCompanyIndex(prev => prev + 1);
   };
 
   const prevCompany = () => {
-    if (!isTransitioning && (currentCompanyIndex === 0 || currentCompanyIndex === clonedCompanies.length - 1)) return;
+    if (clonedCompanies.length <= 1) return;
     setIsTransitioning(true);
     setCurrentCompanyIndex(prev => prev - 1);
   };
 
   // Slider Logic for Education
-  const [currentEduIndex, setCurrentEduIndex] = useState(1);
-  const [isEduTransitioning, setIsEduTransitioning] = useState(true);
-
   const handleEduTransitionEnd = () => {
     if (currentEduIndex === 0) {
       setIsEduTransitioning(false);
@@ -127,13 +126,13 @@ export default function Home() {
   };
 
   const nextEdu = () => {
-    if (!isEduTransitioning && (currentEduIndex === 0 || currentEduIndex === clonedCredentials.length - 1)) return;
+    if (clonedCredentials.length <= 1) return;
     setIsEduTransitioning(true);
     setCurrentEduIndex(prev => prev + 1);
   };
 
   const prevEdu = () => {
-    if (!isEduTransitioning && (currentEduIndex === 0 || currentEduIndex === clonedCredentials.length - 1)) return;
+    if (clonedCredentials.length <= 1) return;
     setIsEduTransitioning(true);
     setCurrentEduIndex(prev => prev - 1);
   };
@@ -185,7 +184,7 @@ export default function Home() {
       </section>
 
       {/* ABOUT SECTION */}
-      <section id="about" style={{padding:'100px 0 40px'}}>
+      <section id="about" style={{padding:'80px 0 40px'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
           <div className="about-split" style={{display:'grid', gridTemplateColumns:'1fr 1.2fr', gap:'80px', alignItems:'center'}}>
             <ScrollReveal className="about-photo-wrap">
@@ -309,7 +308,7 @@ export default function Home() {
           </ScrollReveal>
           
           <div className="slider-layout-main" style={{display:'flex', alignItems:'center', gap:'40px', marginTop:'40px'}}>
-            <button onClick={prevCompany} className="slider-arrow-btn">←</button>
+            <button onClick={prevCompany} className="slider-arrow-btn" suppressHydrationWarning>←</button>
             
             <div className="companies-slider-wrapper" style={{overflow:'hidden', flex:1}}>
               <div className="companies-slider" style={{display:'flex', transform: `translateX(-${currentCompanyIndex * 100}%)`, transition: isTransitioning ? 'transform 0.8s cubic-bezier(0.85, 0, 0.15, 1)' : 'none'}} onTransitionEnd={handleCompanyTransitionEnd}>
@@ -330,12 +329,12 @@ export default function Home() {
               </div>
             </div>
 
-            <button onClick={nextCompany} className="slider-arrow-btn">→</button>
+            <button onClick={nextCompany} className="slider-arrow-btn" suppressHydrationWarning>→</button>
           </div>
         </div>
       </section>
 
-      {/* DEVELOPERS SECTION - VISIBLE CARDS */}
+      {/* DEVELOPERS SECTION */}
       <section id="developers" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
           <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
@@ -364,28 +363,36 @@ export default function Home() {
           </ScrollReveal>
           
           <div className="slider-layout-main" style={{display:'flex', alignItems:'center', gap:'40px', marginTop:'40px'}}>
-            <button onClick={prevEdu} className="slider-arrow-btn">←</button>
+            <button onClick={prevEdu} className="slider-arrow-btn" suppressHydrationWarning>←</button>
             
             <div className="edu-slider-wrapper" style={{overflow:'hidden', flex:1}}>
               <div className="edu-slider" style={{display:'flex', transform: `translateX(-${currentEduIndex * 100}%)`, transition: isEduTransitioning ? 'transform 0.8s cubic-bezier(0.85, 0, 0.15, 1)' : 'none'}} onTransitionEnd={handleEduTransitionEnd}>
-                {clonedCredentials.map((c, index) => (
-                  <div key={`${c.id}-${index}`} style={{minWidth:'100%', padding:'0 10px'}}>
-                    <div className="company-card-new" style={{display:'grid', gridTemplateColumns:'1fr 1.5fr', background:'#1A1A1A', borderRadius:'32px', overflow:'hidden', minHeight:'350px', border:'1px solid rgba(255,255,255,0.05)'}}>
-                      <div style={{background:'white', display:'flex', alignItems:'center', justifyContent:'center', padding:'60px'}}>
-                        <div style={{fontSize:'4rem', color:'var(--red)', fontFamily:'Oswald', fontWeight:900}}>{index === 0 ? (credentials.length < 10 ? `0${credentials.length}` : credentials.length) : (index > credentials.length ? '01' : (index < 10 ? `0${index}` : index))}</div>
-                      </div>
-                      <div style={{padding:'60px', display:'flex', flexDirection:'column', justifyContent:'center'}}>
-                        <div className="news-badge" style={{marginBottom:'15px'}}>{c.category}</div>
-                        <h3 style={{fontSize:'2.2rem', marginBottom:'20px', fontFamily:'Oswald'}}>{c.title}</h3>
-                        <p style={{color:'var(--text-mid)', fontSize:'1.1rem', lineHeight:1.8}}>{c.institution}{c.organization ? ` · ${c.organization}` : ''}</p>
+                {clonedCredentials.map((c, index) => {
+                  // Calculate display number correctly for cloned slider
+                  let displayNum = index;
+                  if (index === 0) displayNum = credentials.length;
+                  else if (index > credentials.length) displayNum = 1;
+                  const formattedNum = displayNum < 10 ? `0${displayNum}` : displayNum;
+
+                  return (
+                    <div key={`${c.id}-${index}`} style={{minWidth:'100%', padding:'0 10px'}}>
+                      <div className="company-card-new" style={{display:'grid', gridTemplateColumns:'1fr 1.5fr', background:'#1A1A1A', borderRadius:'32px', overflow:'hidden', minHeight:'350px', border:'1px solid rgba(255,255,255,0.05)'}}>
+                        <div style={{background:'white', display:'flex', alignItems:'center', justifyContent:'center', padding:'60px'}}>
+                          <div style={{fontSize:'4rem', color:'var(--red)', fontFamily:'Oswald', fontWeight:900}}>{formattedNum}</div>
+                        </div>
+                        <div style={{padding:'60px', display:'flex', flexDirection:'column', justifyContent:'center'}}>
+                          <div className="news-badge" style={{marginBottom:'15px'}}>{c.category}</div>
+                          <h3 style={{fontSize:'2.2rem', marginBottom:'20px', fontFamily:'Oswald'}}>{c.title}</h3>
+                          <p style={{color:'var(--text-mid)', fontSize:'1.1rem', lineHeight:1.8}}>{c.institution}{c.organization ? ` · ${c.organization}` : ''}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            <button onClick={nextEdu} className="slider-arrow-btn">→</button>
+            <button onClick={nextEdu} className="slider-arrow-btn" suppressHydrationWarning>→</button>
           </div>
         </div>
       </section>
@@ -398,7 +405,7 @@ export default function Home() {
       {/* AWARDS SECTION */}
       <section id="awards" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+          <ScrollReveal className="news-header" style={{marginBottom:'80px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
             <div className="section-eyebrow">Recognition</div>
             <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>AWARDS & <em>ACCOLADES</em></h2>
           </ScrollReveal>
@@ -440,12 +447,12 @@ export default function Home() {
             <ScrollReveal delay={1}>
               <form className="contact-form" onSubmit={handleSubmit} style={{background:'#1A1A1A', padding:'40px', borderRadius:'30px'}}>
                 <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'20px'}}>
-                  <input type="text" name="firstName" placeholder="First Name" required style={{background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white'}} />
-                  <input type="text" name="lastName" placeholder="Last Name" required style={{background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white'}} />
+                  <input type="text" name="firstName" placeholder="First Name" required style={{background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white'}} suppressHydrationWarning />
+                  <input type="text" name="lastName" placeholder="Last Name" required style={{background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white'}} suppressHydrationWarning />
                 </div>
-                <input type="email" name="email" placeholder="Email Address" required style={{width:'100%', background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white', marginBottom:'20px'}} />
-                <textarea name="message" placeholder="Your Message" style={{width:'100%', background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white', marginBottom:'20px', minHeight:'150px'}}></textarea>
-                <button type="submit" id="submitBtn" className="btn-red" style={{width:'100%', border:'none', cursor:'pointer'}}>Send Message</button>
+                <input type="email" name="email" placeholder="Email Address" required style={{width:'100%', background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white', marginBottom:'20px'}} suppressHydrationWarning />
+                <textarea name="message" placeholder="Your Message" style={{width:'100%', background:'#0F0F0F', border:'1px solid rgba(255,255,255,0.1)', padding:'15px', borderRadius:'10px', color:'white', marginBottom:'20px', minHeight:'150px'}} suppressHydrationWarning></textarea>
+                <button type="submit" id="submitBtn" className="btn-red" style={{width:'100%', border:'none', cursor:'pointer'}} suppressHydrationWarning>Send Message</button>
               </form>
             </ScrollReveal>
           </div>
@@ -518,6 +525,7 @@ export default function Home() {
           .m-card-wrap { flex-direction: row !important; gap: 30px; text-align: left; }
           .m-node { margin-bottom: 0 !important; flex-shrink: 0; }
           .m-content-card { padding: 30px !important; }
+          .dev-cards-grid { grid-template-columns: 1fr 1fr !important; }
         }
 
         @media (max-width: 900px) {
@@ -527,6 +535,7 @@ export default function Home() {
           .company-card-new div:last-child { padding: 40px !important; }
           .slider-layout-main { gap: 15px; }
           .slider-arrow-btn { width: 44px; height: 44px; font-size: 1.2rem; }
+          .dev-cards-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </main>

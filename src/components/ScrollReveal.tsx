@@ -6,9 +6,10 @@ interface ScrollRevealProps {
   children: React.ReactNode;
   className?: string;
   delay?: number;
+  style?: React.CSSProperties;
 }
 
-const ScrollReveal = ({ children, className = '', delay = 0 }: ScrollRevealProps) => {
+const ScrollReveal = ({ children, className = '', delay = 0, style = {} }: ScrollRevealProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ const ScrollReveal = ({ children, className = '', delay = 0 }: ScrollRevealProps
   const delayClass = delay ? `reveal-delay-${delay}` : '';
 
   return (
-    <div ref={ref} className={`reveal ${delayClass} ${className}`}>
+    <div ref={ref} className={`reveal ${delayClass} ${className}`} style={style}>
       {children}
     </div>
   );
