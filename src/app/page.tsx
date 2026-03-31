@@ -222,10 +222,12 @@ export default function Home() {
         <div style={{position:'absolute', bottom:'-5%', left:'5%', fontFamily:'Oswald', fontSize:'15vw', color:'rgba(255,255,255,0.02)', fontWeight:900, pointerEvents:'none', textTransform:'uppercase'}}>EVOLUTION</div>
 
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">Professional Track</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>CAREER <em>MILESTONES</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">Professional Track</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>CAREER <em>MILESTONES</em></h2>
+            </ScrollReveal>
+          </div>
 
           <div className="pipeline-wrapper" style={{position:'relative', padding:'40px 0'}}>
             <div className="pipeline-main-line" style={{
@@ -276,10 +278,12 @@ export default function Home() {
       {/* COACHING SECTION */}
       <section id="coaching" style={{background:'#0F0F0F', padding:'60px 0 80px'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">Elite Mentorship</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>EXECUTIVE <em>COACHING</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">Elite Mentorship</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>EXECUTIVE <em>COACHING</em></h2>
+            </ScrollReveal>
+          </div>
           
           <div className="coaching-grid" style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(350px, 1fr))', gap:'40px'}}>
             {coaching.map((c, i) => (
@@ -302,10 +306,12 @@ export default function Home() {
       {/* COMPANIES SECTION */}
       <section id="companies" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">The Leuterio Group</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>PROPERTY <em>ECOSYSTEMS</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">The Leuterio Group</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>PROPERTY <em>ECOSYSTEMS</em></h2>
+            </ScrollReveal>
+          </div>
           
           <div className="slider-layout-main" style={{display:'flex', alignItems:'center', gap:'40px', marginTop:'40px'}}>
             <button onClick={prevCompany} className="slider-arrow-btn" suppressHydrationWarning>←</button>
@@ -337,10 +343,12 @@ export default function Home() {
       {/* DEVELOPERS SECTION */}
       <section id="developers" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">Partnerships</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>TRUSTED <em>DEVELOPERS</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">Partnerships</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>TRUSTED <em>DEVELOPERS</em></h2>
+            </ScrollReveal>
+          </div>
           <div className="dev-cards-grid" style={{display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'30px', marginTop:'40px'}}>
             {developers.map((dev, i) => (
               <ScrollReveal key={dev.id} delay={i * 0.1} className="dev-card-simple" style={{background:'#1E1E1E', padding:'50px 30px', borderRadius:'24px', textAlign:'center', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 10px 30px rgba(0,0,0,0.2)'}}>
@@ -357,10 +365,12 @@ export default function Home() {
       {/* EDUCATION SECTION */}
       <section id="education" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">Professional Status</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>LICENSES & <em>CREDENTIALS</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'60px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">Professional Status</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>LICENSES & <em>CREDENTIALS</em></h2>
+            </ScrollReveal>
+          </div>
           
           <div className="slider-layout-main" style={{display:'flex', alignItems:'center', gap:'40px', marginTop:'40px'}}>
             <button onClick={prevEdu} className="slider-arrow-btn" suppressHydrationWarning>←</button>
@@ -368,7 +378,6 @@ export default function Home() {
             <div className="edu-slider-wrapper" style={{overflow:'hidden', flex:1}}>
               <div className="edu-slider" style={{display:'flex', transform: `translateX(-${currentEduIndex * 100}%)`, transition: isEduTransitioning ? 'transform 0.8s cubic-bezier(0.85, 0, 0.15, 1)' : 'none'}} onTransitionEnd={handleEduTransitionEnd}>
                 {clonedCredentials.map((c, index) => {
-                  // Calculate display number correctly for cloned slider
                   let displayNum = index;
                   if (index === 0) displayNum = credentials.length;
                   else if (index > credentials.length) displayNum = 1;
@@ -405,10 +414,12 @@ export default function Home() {
       {/* AWARDS SECTION */}
       <section id="awards" style={{background:'#0F0F0F', padding:'60px 0'}}>
         <div className="container" style={{maxWidth:'1400px'}}>
-          <ScrollReveal className="news-header" style={{marginBottom:'80px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
-            <div className="section-eyebrow">Recognition</div>
-            <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>AWARDS & <em>ACCOLADES</em></h2>
-          </ScrollReveal>
+          <div style={{marginBottom:'80px', display:'flex', flexDirection:'column', alignItems:'flex-start', textAlign:'left'}}>
+            <ScrollReveal className="news-header">
+              <div className="section-eyebrow">Recognition</div>
+              <h2 style={{fontSize:'clamp(2.5rem, 5vw, 4rem)', lineHeight:1.1}}>AWARDS & <em>ACCOLADES</em></h2>
+            </ScrollReveal>
+          </div>
           <div className="awards-cards-grid" style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:'30px', marginTop:'40px'}}>
             {awards.map((a, i) => (
               <ScrollReveal key={a.id} delay={i % 3} className="award-card-alt" style={{background:'#1A1A1A', borderRadius:'24px', overflow:'hidden', border:'1px solid rgba(255,255,255,0.03)'}}>
