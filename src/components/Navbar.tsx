@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
 
@@ -11,7 +12,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
-  const [user, setUser] = useState<unknown>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const pathname = usePathname();
@@ -169,7 +170,7 @@ const Navbar = () => {
             )
           ))}
           
-          {user && (
+          {!!user && (
             <li className="admin-link-nav">
               <button onClick={handleLogout} className="nav-cta" style={{ background: 'transparent', border: '1px solid var(--brand-accent)', color: 'var(--text-primary)', cursor: 'pointer' }}>Logout</button>
             </li>
