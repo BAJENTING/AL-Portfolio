@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ScrollReveal from './ScrollReveal';
+import SectionHeader from './SectionHeader';
 
 interface Article {
   id: number | string;
@@ -28,7 +29,9 @@ export default function NewsSection() {
       try {
         const response = await fetch('/api/news');
         if (!response.ok) {
-          throw new Error('Failed to fetch news');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API Error response:', errorData);
+          throw new Error(errorData.error || `Failed to fetch news: ${response.status}`);
         }
         const result = await response.json();
         
@@ -75,11 +78,11 @@ export default function NewsSection() {
         </div>
         <div className="news-grid">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="news-card skeleton" style={{ minHeight: '300px', background: '#f0f0f0' }}>
-              <div style={{ height: '200px', background: '#e0e0e0' }} />
+            <div key={i} className="news-card skeleton" style={{ minHeight: '300px', background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div style={{ height: '200px', background: 'var(--bg)', opacity: 0.5 }} />
               <div style={{ padding: '20px' }}>
-                <div style={{ height: '20px', background: '#e0e0e0', marginBottom: '10px' }} />
-                <div style={{ height: '40px', background: '#e0e0e0' }} />
+                <div style={{ height: '20px', background: 'var(--bg)', opacity: 0.5, marginBottom: '10px' }} />
+                <div style={{ height: '40px', background: 'var(--bg)', opacity: 0.5 }} />
               </div>
             </div>
           ))}
@@ -89,22 +92,25 @@ export default function NewsSection() {
   }
 
   return (
-    <section id="events">
-      <ScrollReveal className="news-header">
-        <div>
-          <div className="section-eyebrow">Stay Connected</div>
-          <h2>Latest <em>News</em></h2>
+    <section id="news-section">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px', padding: '0 2rem' }}>
+        <div style={{ flex: 1 }}>
+          <SectionHeader 
+            eyebrow="Stay Connected"
+            title="LATEST <em style='color:var(--brand-accent)'>NEWS</em>"
+            watermark="News"
+          />
         </div>
-        <a href="https://homesph.com/news" target="_blank" rel="noopener noreferrer" className="see-all">
+        <a href="https://homesph.com/news" target="_blank" rel="noopener noreferrer" className="see-all" style={{ marginBottom: '60px' }}>
           View All News 
           <svg width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 1L17 6M17 6L12 11M17 6H1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </a>
-      </ScrollReveal>
+      </div>
 
       {articles.length > 0 ? (
-        <ScrollReveal className="news-grid">
+        <ScrollReveal className="news-grid" style={{ marginTop: '20px', paddingTop: '20px' }}>
           {articles.map((article) => (
             <a 
               key={article.id} 

@@ -61,10 +61,25 @@ const Navbar = () => {
 
     window.addEventListener('scroll', handleScroll);
 
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light-mode') {
+    let savedTheme = localStorage.getItem('theme');
+    // Support legacy value
+    if (savedTheme === 'light-mode') savedTheme = 'light';
+
+    if (savedTheme === 'light') {
         setIsLightMode(true);
-        document.body.classList.add('light-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.setAttribute('data-theme', 'light');
+    } else if (savedTheme === 'dark') {
+        setIsLightMode(false);
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.setAttribute('data-theme', 'dark');
+    } else {
+        // Fallback to system preference if no saved theme
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsLightMode(!prefersDark);
+        const theme = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
     }
     setMounted(true);
 
@@ -77,13 +92,10 @@ const Navbar = () => {
   const toggleTheme = () => {
     const newMode = !isLightMode;
     setIsLightMode(newMode);
-    if (newMode) {
-      document.body.classList.add('light-mode');
-      localStorage.setItem('theme', 'light-mode');
-    } else {
-      document.body.classList.remove('light-mode');
-      localStorage.setItem('theme', '');
-    }
+    const theme = newMode ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
   };
 
   const toggleMobileMenu = () => {
@@ -98,19 +110,24 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', href: '/#hero' },
     { name: 'About', href: '/#about' },
-    { name: 'Coaching', href: '/#coaching' },
-    { name: 'Companies', href: '/#companies' },
-    { name: 'Developers', href: '/#developers' },
-    { name: 'Education', href: '/#education' },
+    { 
+      name: 'Expertise', 
+      dropdown: [
+        { name: 'Events', href: '/#events' },
+        { name: 'Coaching', href: '/#coaching' },
+        { name: 'Testimonials', href: '/#testimonials' },
+        { name: 'Education', href: '/#education' },
+        { name: 'Awards', href: '/#awards' },
+      ]
+    },
     { name: 'News', href: '/#news' },
-    { name: 'Awards', href: '/#awards' },
     { name: 'Contact', href: '/#contact' },
   ];
 
   if (!mounted) {
     return (
       <nav id="navbar">
-        <Link href="/" className="nav-logo">Anthony <span>Leuterio</span><sup>Realty</sup></Link>
+        <Link href="/login" className="nav-logo">A. <span>LEUTERIO</span></Link>
         <div className="nav-right">
           <ul className="nav-links">
             <li><Link href="/">Home</Link></li>
@@ -122,34 +139,57 @@ const Navbar = () => {
 
   return (
     <nav id="navbar" className={scrolled ? 'scrolled' : ''}>
-      <Link href="/#hero" className="nav-logo" onClick={closeAll}>Anthony <span>Leuterio</span><sup>Realty</sup></Link>
+      <Link href="/login" className="nav-logo" onClick={closeAll}>
+        A. <span>LEUTERIO</span>
+      </Link>
+      
       <div className="nav-right">
         <ul className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
           {navLinks.map((link) => (
-            <li key={link.name}>
-              <Link href={link.href} onClick={closeAll}>{link.name}</Link>
-            </li>
+            link.dropdown ? (
+              <li key={link.name} className="dropdown">
+                <span className="dropbtn">
+                  {link.name}
+                  <svg className="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <ul className="dropdown-content">
+                  {link.dropdown.map((sub) => (
+                    <li key={sub.name}>
+                      <Link href={sub.href} onClick={closeAll}>{sub.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ) : (
+              <li key={link.name}>
+                <Link href={link.href} onClick={closeAll}>{link.name}</Link>
+              </li>
+            )
           ))}
           
-          {user ? (
+          {user && (
             <li className="admin-link-nav">
-              <Link href="/admin" onClick={closeAll} style={{ color: 'var(--red)' }}>Admin</Link>
+              <button onClick={handleLogout} className="nav-cta" style={{ background: 'transparent', border: '1px solid var(--brand-accent)', color: 'var(--text-primary)', cursor: 'pointer' }}>Logout</button>
             </li>
-          ) : (
-            <li><Link href="/login" onClick={closeAll}>Login</Link></li>
           )}
         </ul>
-        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
-          {!isLightMode ? (
-            <svg className="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>
-          ) : (
-            <svg className="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          )}
-        </button>
-        <button className={`mobile-nav-toggle ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu} aria-label="Toggle Menu">
-          <span></span>
-          <span></span>
-        </button>
+        
+        <div className="nav-actions">
+          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
+            {!isLightMode ? (
+              <svg className="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>
+            ) : (
+              <svg className="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            )}
+          </button>
+          
+          <button className={`mobile-nav-toggle ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu} aria-label="Toggle Menu">
+            <span></span>
+            <span></span>
+          </button>
+        </div>
       </div>
     </nav>
   );

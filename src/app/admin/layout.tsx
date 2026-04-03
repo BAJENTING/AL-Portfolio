@@ -24,8 +24,8 @@ export default function AdminLayout({
       <style>{`
         .admin-root {
           min-height: 100vh;
-          background: #0F0F0F;
-          color: white;
+          background: var(--bg);
+          color: var(--text-primary);
         }
 
         .admin-main-full {

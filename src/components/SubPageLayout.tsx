@@ -38,7 +38,7 @@ const SubPageLayout = ({
         style={{ backgroundImage: `linear-gradient(rgba(15, 15, 15, 0.8), rgba(15, 15, 15, 0.8)), url('${heroImage}')` }}
       >
         <ScrollReveal>
-          <div className="section-eyebrow" style={{ color: 'var(--red)' }}>{eyebrow}</div>
+          <div className="section-eyebrow" style={{ color: 'var(--brand-accent)' }}>{eyebrow}</div>
           <h1 style={{ fontSize: '4rem' }}>{title}</h1>
           <p className="hero-tagline" style={{ margin: '1.5rem auto' }}>{subtitle}</p>
           <Link href={ctaLink} className="btn-red">{ctaText}</Link>

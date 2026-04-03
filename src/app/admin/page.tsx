@@ -5,11 +5,11 @@ import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, 
   Trophy, 
   GraduationCap, 
   Target, 
-  Users,
+  MessageSquare,
+  Calendar,
   Plus,
   Trash2,
   Edit2,
@@ -19,16 +19,16 @@ import {
 
 const SECTIONS = [
   { id: 'coaching', label: 'Coaching Grid', icon: <Target size={24} />, table: 'coaching' },
-  { id: 'my-companies', label: 'My Companies', icon: <Building2 size={24} />, table: 'companies' },
-  { id: 'partner-companies', label: 'Partner Companies', icon: <Users size={24} />, table: 'developers' },
+  { id: 'testimonials', label: 'Testimonials', icon: <MessageSquare size={24} />, table: 'testimonials' },
+  { id: 'events', label: 'Events', icon: <Calendar size={24} />, table: 'events' },
   { id: 'education', label: 'Education', icon: <GraduationCap size={24} />, table: 'credentials' },
   { id: 'awards', label: 'Awards', icon: <Trophy size={24} />, table: 'awards' },
 ];
 
 const TABLE_SCHEMAS: Record<string, string[]> = {
   coaching: ['title', 'badge_text', 'image_url', 'description'],
-  companies: ['name', 'logo_url', 'website_url', 'description'],
-  developers: ['name', 'logo_url', 'website_url', 'sort_order'],
+  testimonials: ['quote', 'author_name', 'author_role', 'author_image_url'],
+  events: ['title', 'event_date', 'image_url', 'description'],
   credentials: ['title', 'institution', 'organization', 'category'],
   awards: ['title', 'organization', 'year', 'icon'],
 };
@@ -261,8 +261,10 @@ export default function AdminPage() {
       <style>{`
         .admin-container {
           padding: 0;
-          color: white;
+          color: var(--text-primary);
+          background: var(--bg);
           font-family: 'DM Sans', sans-serif;
+          min-height: 100vh;
         }
 
         .admin-header {
@@ -270,8 +272,8 @@ export default function AdminPage() {
           justify-content: space-between;
           align-items: center;
           padding: 20px 40px;
-          background: #1A1A1A;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          background: var(--surface);
+          border-bottom: 1px solid var(--border);
           position: sticky;
           top: 0;
           z-index: 100;
@@ -286,9 +288,9 @@ export default function AdminPage() {
           letter-spacing: 0.05em;
         }
 
-        .breadcrumb { color: var(--text-dim); font-size: 0.9rem; }
-        .separator { color: rgba(255, 255, 255, 0.2); }
-        .current { color: var(--red); font-size: 0.9rem; font-weight: 700; }
+        .breadcrumb { color: var(--text-secondary); font-size: 0.9rem; }
+        .separator { color: var(--text-secondary); opacity: 0.3; }
+        .current { color: var(--brand-accent); font-size: 0.9rem; font-weight: 700; }
 
         .header-right {
           display: flex;
@@ -297,7 +299,7 @@ export default function AdminPage() {
         }
 
         .user-email {
-          color: var(--text-mid);
+          color: var(--text-secondary);
           font-size: 0.9rem;
         }
 
@@ -306,8 +308,8 @@ export default function AdminPage() {
           align-items: center;
           gap: 8px;
           background: none;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: white;
+          border: 1px solid var(--border);
+          color: var(--text-primary);
           padding: 8px 16px;
           border-radius: 6px;
           cursor: pointer;
@@ -316,8 +318,9 @@ export default function AdminPage() {
         }
 
         .disconnect-btn:hover {
-          background: var(--red);
-          border-color: var(--red);
+          background: var(--brand-accent);
+          border-color: var(--brand-accent);
+          color: white;
         }
 
         .admin-content {
@@ -336,8 +339,8 @@ export default function AdminPage() {
         }
 
         .nav-card {
-          background: #1A1A1A;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: var(--surface);
+          border: 1px solid var(--border);
           padding: 30px 20px;
           border-radius: 12px;
           display: flex;
@@ -346,28 +349,28 @@ export default function AdminPage() {
           gap: 15px;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          color: white;
+          color: var(--text-primary);
         }
 
         .nav-card:hover {
           transform: translateY(-5px);
-          border-color: rgba(210, 31, 23, 0.3);
-          background: #222;
+          border-color: var(--brand-accent);
+          background: var(--bg);
         }
 
         .nav-card.active {
-          border-color: var(--red);
-          background: rgba(210, 31, 23, 0.05);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          border-color: var(--brand-accent);
+          background: color-mix(in srgb, var(--brand-accent), transparent 95%);
+          box-shadow: 0 10px 30px color-mix(in srgb, var(--brand-accent), transparent 80%);
         }
 
         .card-icon {
-          color: var(--text-dim);
+          color: var(--text-secondary);
           transition: color 0.3s;
         }
 
         .nav-card.active .card-icon {
-          color: var(--red);
+          color: var(--brand-accent);
         }
 
         .card-label {
@@ -379,9 +382,9 @@ export default function AdminPage() {
         }
 
         .section-area {
-          background: #1A1A1A;
+          background: var(--surface);
           border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border);
           padding: 40px;
         }
 
@@ -396,15 +399,16 @@ export default function AdminPage() {
           font-family: 'Oswald', sans-serif;
           font-size: 1.8rem;
           text-transform: uppercase;
+          color: var(--text-primary);
         }
 
-        .section-header h2 span { color: var(--red); }
+        .section-header h2 span { color: var(--brand-accent); }
 
         .add-btn {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: var(--red);
+          background: var(--brand-accent);
           color: white;
           border: none;
           padding: 12px 24px;
@@ -416,14 +420,14 @@ export default function AdminPage() {
           transition: all 0.3s;
         }
 
-        .add-btn:hover { background: var(--red-light); transform: translateY(-2px); }
+        .add-btn:hover { background: var(--brand-accent-hover); transform: translateY(-2px); }
 
         .form-container {
-          background: #0F0F0F;
+          background: var(--bg);
           padding: 30px;
           border-radius: 12px;
           margin-bottom: 40px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border);
         }
 
         .form-container h3 {
@@ -431,7 +435,7 @@ export default function AdminPage() {
           font-family: 'Oswald', sans-serif;
           text-transform: uppercase;
           font-size: 1.2rem;
-          color: var(--red);
+          color: var(--brand-accent);
         }
 
         .admin-form { display: flex; flex-direction: column; gap: 20px; }
@@ -448,21 +452,21 @@ export default function AdminPage() {
           font-size: 0.75rem;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          color: var(--text-dim);
+          color: var(--text-secondary);
         }
 
         .form-group input, .form-group textarea {
-          background: #1A1A1A;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: var(--surface);
+          border: 1px solid var(--border);
           padding: 12px;
           border-radius: 6px;
-          color: white;
+          color: var(--text-primary);
           font-family: inherit;
           outline: none;
         }
 
         .form-group input:focus, .form-group textarea:focus {
-          border-color: var(--red);
+          border-color: var(--brand-accent);
         }
 
         .form-actions {
@@ -472,7 +476,7 @@ export default function AdminPage() {
         }
 
         .save-btn {
-          background: var(--red);
+          background: var(--brand-accent);
           color: white;
           border: none;
           padding: 12px 30px;
@@ -485,8 +489,8 @@ export default function AdminPage() {
 
         .cancel-btn {
           background: transparent;
-          color: var(--text-dim);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: var(--text-secondary);
+          border: 1px solid var(--border);
           padding: 12px 30px;
           border-radius: 6px;
           font-family: 'Oswald', sans-serif;
@@ -508,20 +512,21 @@ export default function AdminPage() {
 
         .data-table th {
           padding: 15px;
-          background: rgba(255, 255, 255, 0.02);
+          background: color-mix(in srgb, var(--brand-accent), transparent 98%);
           font-family: 'Oswald', sans-serif;
           text-transform: uppercase;
           font-size: 0.8rem;
           letter-spacing: 0.05em;
-          color: var(--text-dim);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          color: var(--text-secondary);
+          border-bottom: 1px solid var(--border);
         }
 
         .data-table td {
           padding: 15px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+          border-bottom: 1px solid var(--border);
+          opacity: 0.8;
           font-size: 0.9rem;
-          color: var(--text-mid);
+          color: var(--text-primary);
         }
 
         .table-img {
@@ -573,13 +578,13 @@ export default function AdminPage() {
         .edit-btn { color: #3498db; }
         .edit-btn:hover { color: #5dade2; transform: scale(1.1); }
 
-        .delete-btn { color: var(--red); }
-        .delete-btn:hover { color: var(--red-light); transform: scale(1.1); }
+        .delete-btn { color: var(--brand-accent); }
+        .delete-btn:hover { color: var(--brand-accent-hover); transform: scale(1.1); }
 
         .loading, .empty {
           padding: 60px;
           text-align: center;
-          color: var(--text-dim);
+          color: var(--text-secondary);
           font-size: 0.9rem;
         }
 
