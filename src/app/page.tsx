@@ -207,8 +207,19 @@ export default function Home() {
             </ScrollReveal>
             <ScrollReveal delay={1}>
               <div className="section-eyebrow">THE VISIONARY</div>
-              <h2 style={{fontSize:'clamp(3rem, 5vw, 4.5rem)', lineHeight:1, marginBottom:'40px', color: 'var(--text-primary)'}}>ANTHONY<br /><em style={{color:'var(--brand-accent)'}}>LEUTERIO</em></h2>
-              <div style={{display:'flex', gap:'20px', marginTop:'50px'}}>
+              <h2 style={{fontSize:'clamp(3rem, 5vw, 4.5rem)', lineHeight:1, marginBottom:'30px', color: 'var(--text-primary)'}}>ANTHONY<br /><em style={{color:'var(--brand-accent)'}}>LEUTERIO</em></h2>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '40px', maxWidth: '750px' }}>
+                <p style={{ marginBottom: '20px' }}>
+                  Anthony Gerard Orais Leuterio has helped make real estate in the Philippines more popular and appealing to buyers. He uses creative ideas and social media to reach more people locally and globally.
+                </p>
+                <p style={{ marginBottom: '20px' }}>
+                  He has received over 500 awards and is the first E-Pro Certified Broker in the Philippines, recognized by the National Association of Realtors.
+                </p>
+                <p>
+                  He has inspired many people and helped improve the lives of real estate brokers and agents. Today, his business provides jobs for nearly 5,000 people across the country.
+                </p>
+              </div>
+              <div style={{display:'flex', gap:'20px', marginTop:'20px'}}>
                 {[
                   { val: '15K+', lbl: 'Professionals' },
                   { val: '20+', lbl: 'Cities' },
