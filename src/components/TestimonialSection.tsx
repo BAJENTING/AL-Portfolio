@@ -117,6 +117,17 @@ const TestimonialSection = ({ testimonials }: TestimonialSectionProps) => {
       </div>
       
       <style jsx>{`
+        .testi-card {
+          transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        [data-theme="light"] .testi-card {
+          box-shadow: 10px 10px 20px rgba(0,0,0,0.05);
+        }
+        .testi-card:hover {
+          transform: translateY(-15px);
+          border-color: var(--brand-accent);
+          box-shadow: none !important;
+        }
         @media (max-width: 1024px) {
           .testi-slider-track > div {
             flex: 0 0 50% !important;

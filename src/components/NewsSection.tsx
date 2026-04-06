@@ -148,6 +148,20 @@ export default function NewsSection() {
           {error ? `Error: ${error}` : 'No news articles available at the moment.'}
         </div>
       )}
+
+      <style jsx>{`
+        .news-card {
+          transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        [data-theme="light"] .news-card {
+          box-shadow: 10px 10px 20px rgba(0,0,0,0.05);
+        }
+        .news-card:hover {
+          transform: translateY(-10px);
+          border-color: var(--brand-accent) !important;
+          box-shadow: none !important;
+        }
+      `}</style>
     </section>
   );
 }

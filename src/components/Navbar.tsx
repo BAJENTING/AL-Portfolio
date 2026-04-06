@@ -122,6 +122,7 @@ const Navbar = () => {
       ]
     },
     { name: 'News', href: '/#news' },
+    { name: 'Media', href: '/#media' },
     { name: 'Contact', href: '/#contact' },
   ];
 

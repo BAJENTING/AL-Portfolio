@@ -12,6 +12,7 @@ const TABLE_SCHEMAS: Record<string, string[]> = {
   testimonials: ['id', 'quote', 'author_name', 'author_role', 'author_image_url'],
   developers: ['id', 'name', 'logo_url', 'website_url', 'sort_order'],
   contacts: ['first_name', 'last_name', 'email', 'phone', 'looking_to', 'budget_range', 'message'],
+  media: ['id', 'title', 'image_url', 'description'],
 };
 
 export default function TableManager() {

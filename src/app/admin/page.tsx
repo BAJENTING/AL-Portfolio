@@ -23,6 +23,7 @@ const SECTIONS = [
   { id: 'events', label: 'Events', icon: <Calendar size={24} />, table: 'events' },
   { id: 'education', label: 'Education', icon: <GraduationCap size={24} />, table: 'credentials' },
   { id: 'awards', label: 'Awards', icon: <Trophy size={24} />, table: 'awards' },
+  { id: 'media', label: 'Media/Gallery', icon: <Calendar size={24} />, table: 'media' },
 ];
 
 const TABLE_SCHEMAS: Record<string, string[]> = {
@@ -31,6 +32,7 @@ const TABLE_SCHEMAS: Record<string, string[]> = {
   events: ['title', 'event_date', 'image_url', 'description'],
   credentials: ['title', 'institution', 'organization', 'category'],
   awards: ['title', 'organization', 'year', 'icon'],
+  media: ['title', 'image_url', 'description'],
 };
 
 export default function AdminPage() {
@@ -324,7 +326,7 @@ export default function AdminPage() {
         }
 
         .admin-content {
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
           padding: 40px;
           display: flex;
@@ -333,9 +335,10 @@ export default function AdminPage() {
         }
 
         .nav-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          display: flex;
+          flex-wrap: wrap;
           gap: 20px;
+          width: 100%;
         }
 
         .nav-card {
@@ -346,6 +349,8 @@ export default function AdminPage() {
           display: flex;
           flex-direction: column;
           align-items: center;
+          flex: 1;
+          min-width: 180px;
           gap: 15px;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -367,6 +372,9 @@ export default function AdminPage() {
         .card-icon {
           color: var(--text-secondary);
           transition: color 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .nav-card.active .card-icon {
@@ -379,6 +387,7 @@ export default function AdminPage() {
           font-weight: 600;
           letter-spacing: 0.05em;
           font-size: 0.9rem;
+          text-align: center;
         }
 
         .section-area {
@@ -386,6 +395,7 @@ export default function AdminPage() {
           border-radius: 16px;
           border: 1px solid var(--border);
           padding: 40px;
+          width: 100%;
         }
 
         .section-header {

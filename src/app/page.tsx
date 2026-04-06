@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import ScrollReveal from '@/components/ScrollReveal';
 import NewsSection from '@/components/NewsSection';
+import MediaSection from '@/components/MediaSection';
 import EventsSection from '@/components/EventsSection';
 import SectionHeader from '@/components/SectionHeader';
 import TestimonialSection from '@/components/TestimonialSection';
@@ -58,7 +59,7 @@ export default function Home() {
 
   const getImgSrc = (src: string | null | undefined) => {
     if (!src) return '';
-    let cleanSrc = src.replace(/^\/?components\//, '').replace(/^\/?images\//, '');
+    const cleanSrc = src.replace(/^\/?components\//, '').replace(/^\/?images\//, '');
     return (cleanSrc.startsWith('http') || cleanSrc.startsWith('/')) ? cleanSrc : `/images/${cleanSrc}`;
   };
 
@@ -158,9 +159,9 @@ export default function Home() {
           <div style={{ maxWidth: '800px', flex: '1' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', color: 'var(--brand-accent)', fontWeight: 600, letterSpacing: '0.2em', fontSize: '0.75rem', marginBottom: '15px' }}>
               <span style={{ width: '40px', height: '1px', background: 'var(--brand-accent)' }}></span>
-              THE PHILIPPINES&apos; #1 REAL ESTATE VISIONARY
+              <span style={{ color: '#FFFFFF' }}>THE PHILIPPINES&apos; #1 REAL ESTATE VISIONARY</span>
             </div>
-            <h1 style={{ textShadow: '0 10px 30px rgba(0,0,0,0.8)', fontSize: 'clamp(2.5rem, 5vw, 4.2rem)', letterSpacing: '-0.02em', lineHeight: '1.0', fontWeight: 700, margin: '0 0 25px 0' }}>
+            <h1 style={{ color: '#FFFFFF', textShadow: '0 10px 30px rgba(0,0,0,0.8)', fontSize: 'clamp(2.5rem, 5vw, 4.2rem)', letterSpacing: '-0.02em', lineHeight: '1.0', fontWeight: 700, margin: '0 0 25px 0' }}>
               <span style={{ display: 'block' }}>DOMINATE THE</span>
               <span style={{ display: 'block', color: 'var(--brand-accent)' }}>REAL ESTATE</span>
               <span style={{ display: 'block' }}>MARKET</span>
@@ -213,7 +214,7 @@ export default function Home() {
                   { val: '20+', lbl: 'Cities' },
                   { val: '1K+', lbl: 'Awards' }
                 ].map((s, i) => (
-                  <div key={i} style={{flex:1, background:'var(--surface)', padding:'25px', borderRadius:'20px', border:'1px solid var(--border)', textAlign:'center'}}>
+                  <div key={i} className="about-stat-card" style={{flex:1, background:'var(--surface)', padding:'25px', borderRadius:'20px', border:'1px solid var(--border)', textAlign:'center'}}>
                     <div style={{fontSize:'2.2rem', color:'var(--brand-accent)', fontWeight:700, fontFamily:'Oswald'}}>{s.val}</div>
                     <div style={{fontSize:'0.65rem', textTransform:'uppercase', color:'var(--text-secondary)', letterSpacing:'0.1em'}}>{s.lbl}</div>
                   </div>
@@ -331,6 +332,8 @@ export default function Home() {
         <NewsSection />
       </section>
 
+      <MediaSection />
+
       {/* CONTACT SECTION */}
       <section id="contact" style={{background:'var(--bg)', padding:'60px 0 80px', display: 'block'}}>
         <div className="container" style={{maxWidth:'1400px', width: '100%'}}>
@@ -391,7 +394,18 @@ export default function Home() {
       <style>{`
         .slider-arrow-btn { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); width: 60px; height: 60px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s; flex-shrink: 0; }
         .slider-arrow-btn:hover { background: var(--brand-accent); border-color: var(--brand-accent); color: white; transform: scale(1.1); }
-        .coaching-card-alt:hover, .award-card-alt:hover { transform: translateY(-15px); border-color: var(--brand-accent) !important; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        
+        .coaching-card-alt { transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
+        [data-theme="light"] .coaching-card-alt { box-shadow: 10px 10px 20px rgba(0,0,0,0.05); }
+        .coaching-card-alt:hover { transform: translateY(-15px); border-color: var(--brand-accent) !important; box-shadow: none !important; }
+        
+        .award-card-alt { transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
+        [data-theme="light"] .award-card-alt { box-shadow: 10px 10px 20px rgba(0,0,0,0.05); }
+        .award-card-alt:hover { transform: translateY(-15px); border-color: var(--brand-accent) !important; box-shadow: none !important; }
+
+        .about-stat-card { transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; border: 1px solid var(--border) !important; }
+        [data-theme="light"] .about-stat-card { box-shadow: 10px 10px 20px rgba(0,0,0,0.05); }
+
         .form-group input:focus, textarea:focus { border-color: var(--brand-accent) !important; }
         section { scroll-margin-top: 80px; }
         @media (max-width: 1024px) {

@@ -123,7 +123,8 @@ export default function EventsSection() {
                   border: '1px solid var(--border)', 
                   display: 'flex', 
                   minHeight: '320px',
-                  height: '100%'
+                  height: '100%',
+                  transition: 'transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease'
                 }}>
                   <div style={{ flex: '0 0 40%', position: 'relative' }}>
                     <img 
@@ -154,6 +155,9 @@ export default function EventsSection() {
       </div>
 
       <style jsx>{`
+        [data-theme="light"] .event-card-luxury {
+          box-shadow: 10px 10px 20px rgba(0,0,0,0.05);
+        }
         @media (max-width: 1024px) {
           .event-slide-item {
             flex: 0 0 100% !important;
